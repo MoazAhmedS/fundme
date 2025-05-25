@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'project.apps.ProjectConfig',
     'comments.apps.CommentsConfig',
+    'donation.apps.DonationConfig',
 ]
 
 MIDDLEWARE = [
