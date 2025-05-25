@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "accounts.apps.AccountsConfig",
-    'project.apps.ProjectConfig'
+    'project.apps.ProjectConfig',
+    'interactions.apps.InteractionsConfig',
 ]
 
 MIDDLEWARE = [
@@ -79,9 +80,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fundme',
         'USER': 'postgres',
-        'PASSWORD': '123',
+        'PASSWORD': '212002',
         'HOST': 'localhost',
-        'port': '5432'
+        'PORT': '5432'
     }
 }
 
