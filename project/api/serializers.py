@@ -12,7 +12,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['id','create-date', 'current_donations']
+        read_only_fields = ['id','create_date', 'current_donations']
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
