@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'project.apps.ProjectConfig',
     'comments.apps.CommentsConfig',
+    'interactions.apps.InteractionsConfig',
     'donation.apps.DonationConfig',
 ]
 
@@ -81,9 +82,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fundme',
         'USER': 'postgres',
-        'PASSWORD': '123',
+        'PASSWORD': '212002',
         'HOST': 'localhost',
-        'port': '5432'
+        'PORT': '5432'
     }
 }
 
