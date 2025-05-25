@@ -39,17 +39,7 @@ class ProfileUser(AbstractUser):
         verbose_name="Country"
     )
     
-    STATUS_CHOICES = [
-        ('Student', 'Student'),
-        ('Graduated', 'Graduated'),
-    ]
-    status = models.CharField(
-        max_length=10, 
-        choices=STATUS_CHOICES, 
-        blank=True, 
-        null=True,
-        verbose_name="Status"
-    )
+
     
     email_active = models.BooleanField(
         default=False,
