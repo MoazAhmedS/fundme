@@ -1,5 +1,6 @@
 from django.urls import path
-from project.api.views import ReadAndCreateProject
+from project.api.views import *
 urlpatterns = [
-    path('ReadOrCreate',ReadAndCreateProject.as_view(),name='read-or-create')
+    path('Create',ReadAndCreateProject.as_view()),
+    path('<int:id>',ReadUpdateDeleteProjectByID.as_view())
 ]

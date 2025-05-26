@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-
+from django.shortcuts import get_object_or_404
 from ..models import *
 from accounts.models import ProfileUser
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,10 +23,14 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id','title','details','target','current_donations','start_date',
                   'end_date','status','featured','create_date','category_id','user_id']
         read_only_fields = ['id','create_date','categoryObject','userObject']
+
+
     @classmethod
     def getAllProjects(cls):
         return cls(Project.objects.all(),many=True).data
-
+    @classmethod
+    def getProjectById(cls,id):
+        return ProjectSerializer(Project.getProjById(id)).data
 
 class ImageSerializer(serializers.ModelSerializer):
     project_id = serializers.PrimaryKeyRelatedField(
