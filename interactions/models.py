@@ -3,7 +3,7 @@ from accounts.models import ProfileUser
 from project.models import Project       
 
 class Tag(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Tag Name")
+    name = models.CharField(max_length=100, verbose_name="Tag Name",unique=True)
 
     def __str__(self):
         return self.name
