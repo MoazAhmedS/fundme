@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from interactions.models import Tag
-from interactions.serializers import TagSerializer
+from interactions.serializers import *
 
 class TagListCreateView(generics.ListCreateAPIView):
     queryset = Tag.objects.all()
@@ -8,5 +8,10 @@ class TagListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [permissions.IsAdminUser()]  # الادمن بس اللي يضيف التاجات 
-        return [permissions.AllowAny()]  # الكل يقدر يشوف التاجات
+            return [permissions.IsAdminUser()]  
+        return [permissions.AllowAny()] 
+
+
+class ProjectTagCreateAPIView(generics.CreateAPIView):
+    queryset = ProjectTag.objects.all()
+    serializer_class = ProjectTagSerializer
