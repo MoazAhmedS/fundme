@@ -5,4 +5,7 @@ urlpatterns = [
     path('tags/', TagListCreateView.as_view(), name='tag-list-create'),
     path('project-tags/', ProjectTagCreateAPIView.as_view(), name='projecttag-create'),
 
+    path('rates/', RateListAPIView.as_view(), name='rate-list'),
+    path('rates/create/', RateCreateAPIView.as_view(), name='rate-create'),
+
 ]
