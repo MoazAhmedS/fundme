@@ -7,10 +7,11 @@ from comments.models import Comment
 class Report(models.Model):
     user_id = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)
     report_details = models.TextField()
-    report_date = models.DateField()
+    report_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"Report {self.id} by {self.user.username}"
+
 
 class ReportComment(models.Model):
     report_id = models.ForeignKey(Report, on_delete=models.CASCADE)
