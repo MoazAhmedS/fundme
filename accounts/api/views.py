@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import AccountRegisterSerializer
+from .serializers import AccountRegisterSerializer, AccountLoginSerializer
 from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
 
@@ -10,6 +10,11 @@ from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from rest_framework.permissions import AllowAny
 
 def send_activation_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -23,6 +28,8 @@ def send_activation_email(user, request):
 
 
 class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def generate_unique_username(self, base_name):
         base_name = base_name.lower().replace(" ", "") 
         username = base_name
@@ -53,7 +60,7 @@ class RegisterAPIView(APIView):
 
                 username = self.generate_unique_username(base_username)
 
-                user = ProfileUser.create_user(serializer.validated_data, username)
+                user = ProfileUser.create_user(serializer.validated_data)
                 send_activation_email(user, request) 
 
                 return Response({
@@ -83,3 +90,38 @@ class ActivateAccountView(APIView):
             return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid activation link."}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AccountLoginSerializer(data=request.data)
+        print(serializer.is_valid())
+
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+
+            user = authenticate(username=email, password=password)
+            if user is not None:
+                if not user.email_active:
+                    return Response({"error": "Account is not activated."}, status=status.HTTP_403_FORBIDDEN)
+
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                    }
+                }, status=status.HTTP_200_OK)
+
+            return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

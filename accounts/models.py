@@ -26,13 +26,15 @@ class ProfileUser(AbstractUser):
         verbose_name_plural = "Users"
 
     @classmethod
-    def create_user(cls, validated_data, username):
-        return cls.objects.create(
-            username=username,
+    def create_user(cls, validated_data):
+        user = cls(
+            username=validated_data['email'], 
             email=validated_data['email'],
-            password=validated_data['password'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             phone=validated_data['phone'],
             image=validated_data.get('image', None)
         )
+        user.set_password(validated_data['password'])  
+        user.save()
+        return user

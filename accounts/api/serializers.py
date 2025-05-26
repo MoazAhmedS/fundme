@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models import ProfileUser
+from django.contrib.auth import authenticate
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,9 +34,26 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
     
 
 class AccountLoginSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
-        model =  ProfileUser
-        fields = [
-            'email',
-            'password',
-        ]
+        model = ProfileUser
+        fields = ['email', 'password']
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        if email and password:
+            user = authenticate(username=email, password=password)
+
+            if not user:
+                raise serializers.ValidationError("Invalid email or password.")
+
+            if not user.email_active: 
+                raise serializers.ValidationError("Account is not activated.")
+
+            data['user'] = user
+            return data
+
+        raise serializers.ValidationError("Must include 'email' and 'password'.")

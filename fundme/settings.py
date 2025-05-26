@@ -144,3 +144,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'moazahmed0102@gmail.com'
 EMAIL_HOST_PASSWORD = 'vusa thzo ocqc aebz' 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
