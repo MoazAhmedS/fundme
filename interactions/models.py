@@ -1,6 +1,7 @@
 from django.db import models
 from accounts.models import ProfileUser  
 from project.models import Project       
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Tag(models.Model):
     name = models.CharField(max_length=100, verbose_name="Tag Name",unique=True)
@@ -29,13 +30,17 @@ class ProjectTag(models.Model):
 class Rate(models.Model):
     user_id = models.ForeignKey(ProfileUser, on_delete=models.CASCADE, verbose_name="User")
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name="Project")
-    rate_value = models.PositiveSmallIntegerField(verbose_name="Rate Value")  
+    rate_value = models.PositiveSmallIntegerField(
+        verbose_name="Rate Value",
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+
     note = models.TextField(blank=True, null=True, verbose_name="Note")
 
     class Meta:
         verbose_name = "Rate"
         verbose_name_plural = "Rates"
-        unique_together = ('user_id', 'project_id')  
+        unique_together = ('user_id', 'project_id')
 
     def __str__(self):
-        return f"{self.user.username} rated {self.project.title} - {self.rate_value}"
+        return f"{self.user_id.user.username} rated {self.project_id.title} - {self.rate_value}"

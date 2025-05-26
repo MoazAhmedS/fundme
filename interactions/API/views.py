@@ -1,6 +1,9 @@
 from rest_framework import generics, permissions
-from interactions.models import Tag
-from interactions.serializers import *
+from rest_framework import generics
+from interactions.models import *
+from interactions.API.serializers import *
+from rest_framework.permissions import IsAuthenticated
+
 
 class TagListCreateView(generics.ListCreateAPIView):
     queryset = Tag.objects.all()
@@ -15,3 +18,5 @@ class TagListCreateView(generics.ListCreateAPIView):
 class ProjectTagCreateAPIView(generics.CreateAPIView):
     queryset = ProjectTag.objects.all()
     serializer_class = ProjectTagSerializer
+
+
