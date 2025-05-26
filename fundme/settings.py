@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'comments.apps.CommentsConfig',
     'interactions.apps.InteractionsConfig',
     'donation.apps.DonationConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fundme',
         'USER': 'postgres',
-        'PASSWORD': '212002',
+        'PASSWORD': '123',
         'HOST': 'localhost',
         'PORT': '5432'
     }
@@ -129,3 +130,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.ProfileUser'
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR/'media'

@@ -1,8 +1,7 @@
 from rest_framework import serializers 
 
 from ..models import *
-from ...accounts.models import ProfileUser
-
+from accounts.models import ProfileUser
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -23,7 +22,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id','title','details','target','current_donations','start_date',
                   'end_date','status','featured','create_date','category_id','user_id']
-        read_only_fields = ['id','create_date', 'current_donations','categoryObject','userObject']
+        read_only_fields = ['id','create_date','categoryObject','userObject']
+    @classmethod
+    def getAllProjects(cls):
+        return cls(Project.objects.all(),many=True).data
+
 
 class ImageSerializer(serializers.ModelSerializer):
     project_id = serializers.PrimaryKeyRelatedField(
