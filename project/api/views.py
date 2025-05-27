@@ -11,24 +11,19 @@ from ..models import *
 
 class CreateProject(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self,request):
-        projectSerialized = ProjectSerializer(data=request.data)
-        if projectSerialized.is_valid():
-            projectSerialized.save()
-            return Response(
-                data=projectSerialized.data,
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            return Response(
-                data={'errors':projectSerialized.errors
-                      },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def post(self, request):
+        project_data = request.data.copy()
+        images = request.FILES.getlist('images') 
 
-class ReadUpdateDeleteProjectByID(APIView):
-    def get(self,request,id):
-        return Response(
-            data=ProjectSerializer.getProjectById(id),
-            status=status.HTTP_200_OK
-        )
+        projectSerialized = ProjectSerializer(data=project_data)
+        if projectSerialized.is_valid():
+            project = projectSerialized.save()
+            for image in images:
+                Images.objects.create(projectObject=project, path=image)
+
+            return Response(data=ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data={'errors': projectSerialized.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
