@@ -25,5 +25,11 @@ class CreateProject(APIView):
         else:
             return Response(data={'errors': projectSerialized.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+class ReadUpdateDeleteProjectByID(APIView):
+    def get(self,request,id):
+        return Response(
+            data=ProjectSerializer.getProjectById(id),
+            status=status.HTTP_200_OK
+        )
 
 

@@ -8,6 +8,15 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id']
 
+class ImageSerializer(serializers.ModelSerializer):
+    project_id = serializers.PrimaryKeyRelatedField(
+        source='projectObject',
+        queryset=Project.objects.all(),
+    )
+    class Meta:
+        model = Images
+        fields = ['id','path','project_id']
+
 class ProjectSerializer(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(
         source='categoryObject',
@@ -20,12 +29,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     current_donations = serializers.ReadOnlyField()
     rates = serializers.SerializerMethodField()
 
+    images = ImageSerializer(source='images_set', many=True, read_only=True)
+
     class Meta:
         model = Project
         fields = [
             'id', 'title', 'details', 'target', 'current_donations', 'rates',
             'start_date', 'end_date', 'status', 'featured',
-            'create_date', 'category_id', 'user_id'
+            'create_date', 'category_id', 'user_id','images'
         ]
         read_only_fields = ['id', 'create_date', 'categoryObject', 'userObject']
 
@@ -39,11 +50,3 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_rates(self, obj):
         return obj.rates 
     
-class ImageSerializer(serializers.ModelSerializer):
-    project_id = serializers.PrimaryKeyRelatedField(
-        source='projectObject',
-        queryset=Project.objects.all(),
-    )
-    class Meta:
-        model = Images
-        fields = ['id','path','project_id']
