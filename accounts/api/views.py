@@ -4,6 +4,8 @@ from rest_framework import status
 from .serializers import AccountRegisterSerializer, AccountLoginSerializer
 from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
+from datetime import timedelta
+from django.utils.timezone import now
 
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -30,17 +32,6 @@ def send_activation_email(user, request):
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
-    def generate_unique_username(self, base_name):
-        base_name = base_name.lower().replace(" ", "") 
-        username = base_name
-        counter = 1
-
-        while ProfileUser.objects.filter(username=username).exists():
-            username = f"{base_name}{counter}5475"
-            counter += 1
-        return username
-    
-
     def post(self, request):
         serializer = AccountRegisterSerializer(data=request.data)
 
@@ -54,12 +45,6 @@ class RegisterAPIView(APIView):
                 return Response({"error": "Phone number already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                first_name = serializer.validated_data['first_name']
-                last_name = serializer.validated_data['last_name']
-                base_username = f"{first_name}{last_name}"
-
-                username = self.generate_unique_username(base_username)
-
                 user = ProfileUser.create_user(serializer.validated_data)
                 send_activation_email(user, request) 
 
@@ -82,14 +67,20 @@ class ActivateAccountView(APIView):
         except (TypeError, ValueError, OverflowError, ProfileUser.DoesNotExist):
             user = None
         
-        if user and default_token_generator.check_token(user, token):
-            if( user.email_active):
-                return Response({"message": "Account is already activated."}, status=status.HTTP_200_OK)
-            user.email_active = True
-            user.save()
-            return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "Invalid activation link."}, status=status.HTTP_400_BAD_REQUEST)
+        if user:
+            if default_token_generator.check_token(user, token):
+                token_created_time = user.last_login or user.date_joined
+                if now() - token_created_time > timedelta(hours=24):
+                    return Response({"error": "Activation link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+                if user.email_active:
+                    return Response({"message": "Account is already activated."}, status=status.HTTP_200_OK)
+
+                user.email_active = True
+                user.save()
+                return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid or expired activation link."}, status=status.HTTP_400_BAD_REQUEST)
         
 
 class LoginAPIView(APIView):
