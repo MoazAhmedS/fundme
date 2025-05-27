@@ -8,6 +8,8 @@ from rest_framework.pagination import  PageNumberPagination
 from rest_framework.viewsets import ModelViewSet
 from .serializers import ProjectSerializer
 from ..models import *
+from comments.models import Comment
+from comments.API.serializers import CommentSerializer
 
 class CreateProject(APIView):
     permission_classes = [IsAuthenticated]
@@ -32,4 +34,9 @@ class ReadUpdateDeleteProjectByID(APIView):
             status=status.HTTP_200_OK
         )
 
+class ProjectCommentsView(APIView):
+    def get(self, request, project_id):
+        comments = Comment.objects.filter(project_id=project_id, parent_id=None).order_by('-created_date')
+        serialized = CommentSerializer(comments, many=True)
+        return Response(serialized.data, status=status.HTTP_200_OK)
 
