@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from ..models import *
 from accounts.models import ProfileUser
+from interactions.models import Tag, ProjectTag
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -31,12 +32,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     images = ImageSerializer(source='images_set', many=True, read_only=True)
 
+    tags = serializers.ListField(
+        child=serializers.CharField(), write_only=True, required=False
+    )
     class Meta:
         model = Project
         fields = [
             'id', 'title', 'details', 'target', 'current_donations', 'rates',
             'start_date', 'end_date', 'status', 'featured',
-            'create_date', 'category_id', 'user_id','images'
+            'create_date', 'category_id', 'user_id','images','tags'
         ]
         read_only_fields = ['id', 'create_date', 'categoryObject', 'userObject']
 
@@ -47,6 +51,17 @@ class ProjectSerializer(serializers.ModelSerializer):
     def getProjectById(cls,id):
         return ProjectSerializer(Project.getProjById(id)).data
 
+
+    def create(self, validated_data):
+        tag_names = validated_data.pop('tags', [])
+        project = Project.objects.create(**validated_data)
+
+        for tag_name in tag_names:
+            tag, _ = Tag.objects.get_or_create(name=tag_name)
+            ProjectTag.objects.get_or_create(project_id=project, tag_id=tag)
+
+        return project
+    
     def get_rates(self, obj):
         return obj.rates 
     
