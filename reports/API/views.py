@@ -17,7 +17,7 @@ class ReportCommentView(APIView):
 
         comment = get_object_or_404(Comment, id=comment_id)
         report = Report.objects.create(
-            user_id=request.user.profileuser,
+            user_id=request.user.id ,
             report_details=reason
         )
 
@@ -38,7 +38,7 @@ class ReportProjectView(APIView):
 
         project = get_object_or_404(Project, id= project_id)
         report = Report.objects.create(
-            user_id=request.user.profileuser,
+            user_id= request.user.id ,
             report_details=reason
         )
 
