@@ -1,11 +1,7 @@
 from django.urls import path
-from interactions.API.views import *
+from .API.views import *
 
 urlpatterns = [
-    path('tags/', TagListCreateView.as_view(), name='tag-list-create'),
-    path('project-tags/', ProjectTagCreateAPIView.as_view(), name='projecttag-create'),
-
-    path('rates/', RateListAPIView.as_view(), name='rate-list'),
-    path('rates/create/', RateCreateAPIView.as_view(), name='rate-create'),
-
+    path('projects/<int:project_id>/rate/', RateCreateAPIView.as_view(), name='rate-project'),
+    path('projects/rating/<int:project_id>/', RateListAPIView.as_view(), name='get-project-ratings'),
 ]
