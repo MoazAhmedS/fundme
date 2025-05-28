@@ -43,6 +43,18 @@ INSTALLED_APPS = [
     'comments.apps.CommentsConfig',
     'interactions.apps.InteractionsConfig',
     'donation.apps.DonationConfig',
+
+    # Django Allauth Facebook settings
+    'django.contrib.sites',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook',
+    'dj_rest_auth.registration',
+    # End Django Allauth Facebook settings
 ]
 
 MIDDLEWARE = [
@@ -53,6 +65,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware', # Django Allauth Facebook settings
+
 ]
 
 ROOT_URLCONF = 'fundme.urls'
@@ -149,4 +163,21 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+}
+
+
+# Django Allauth Facebook settings
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_USERNAME_REQUIRED = True 
+ACCOUNT_EMAIL_REQUIRED = True  
+
+ACCOUNT_SIGNUP_FIELDS = {
+    'username': {'required': True}, 
+    'email': {'required': True},
 }
