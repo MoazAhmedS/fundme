@@ -10,7 +10,7 @@ from comments.API.serializers import CommentSerializer
 from interactions.models import Tag, ProjectTag
 
 class CreateProject(APIView):
-
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         project_data = request.data.copy()
         images = request.FILES.getlist('images')
@@ -33,7 +33,7 @@ class CreateProject(APIView):
             return Response(data={'errors': projectSerialized.errors}, status=status.HTTP_400_BAD_REQUEST)
         
 
-class ReadUpdateDeleteProjectByID(APIView):
+class ProjectDetails(APIView):
     def get(self,request,id):
         return Response(
             data=ProjectSerializer.getProjectById(id),
