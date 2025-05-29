@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from ..models import ProfileUser
 from django.contrib.auth import authenticate
+from project.models import Project
+from donation.models import Donation
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,3 +90,21 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data['password'])
         instance.save()
         return instance
+    
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileUser
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'image', 'birth_date', 'facebook', 'country', 'email_active', 'create_date']
+
+class UserProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'title', 'details', 'target', 'current_donations', 'start_date', 'end_date', 'create_date', 'status', 'featured', 'categoryObject']
+
+class UserDonationSerializer(serializers.ModelSerializer):
+    project_title = serializers.CharField(source='project_id.title', read_only=True)
+
+    class Meta:
+        model = Donation
+        fields = ['id', 'amount', 'donation_date', 'project_id', 'project_title']
