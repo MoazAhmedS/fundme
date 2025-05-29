@@ -4,5 +4,5 @@ urlpatterns = [
     path('Create/',CreateProject.as_view()),
     path('<int:id>/',ProjectDetails.as_view()),
     path('<int:project_id>/comments/', ProjectCommentsView.as_view(), name='project-comments'),
-
+    path('<int:project_id>/similar/', SimilarProjectsView.as_view(), name='similar-projects'),
 ]
