@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import AccountRegisterSerializer, AccountLoginSerializer, ForgotPasswordSerializer
+from .serializers import AccountRegisterSerializer, AccountLoginSerializer, ForgotPasswordSerializer,ResetPasswordSerializer
 from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
 from datetime import timedelta
@@ -153,7 +153,7 @@ def send_reset_password_email(user, request):
     )
     subject = 'Reset Your Password'
     message = f'Hi {user.first_name},\nPlease reset your password using this link:\n{reset_link}'
-    message += "\nThis link will expire in 1 hour. If you didn't request this, please ignore this email."
+    message += "\nThis link will expire in 24 hours."
     send_mail(subject, message, 'your_email@example.com', [user.email])
 
 
@@ -168,4 +168,25 @@ class ForgotPasswordAPIView(APIView):
             send_reset_password_email(user, request)
             return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
         
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ResetPasswordAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = ProfileUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, ProfileUser.DoesNotExist):
+            return Response({'error': 'Invalid reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired reset token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ResetPasswordSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

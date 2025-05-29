@@ -71,7 +71,7 @@ class ForgotPasswordSerializer(serializers.ModelSerializer):
 
 
 class ResetPasswordSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8)
+    password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
