@@ -181,3 +181,5 @@ ACCOUNT_SIGNUP_FIELDS = {
     'username': {'required': True}, 
     'email': {'required': True},
 }
+
+PASSWORD_RESET_TIMEOUT = 60 # 1 hour

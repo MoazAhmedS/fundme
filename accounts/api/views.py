@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import AccountRegisterSerializer, AccountLoginSerializer
+from .serializers import AccountRegisterSerializer, AccountLoginSerializer, ForgotPasswordSerializer
 from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
 from datetime import timedelta
@@ -143,3 +143,29 @@ class FacebookLogin(SocialLoginView):
     def login(self):
         super().login()
         return self.get_response()
+    
+
+def send_reset_password_email(user, request):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    reset_link = request.build_absolute_uri(
+        reverse('reset-password', kwargs={'uidb64': uid, 'token': token})
+    )
+    subject = 'Reset Your Password'
+    message = f'Hi {user.first_name},\nPlease reset your password using this link:\n{reset_link}'
+    message += "\nThis link will expire in 1 hour. If you didn't request this, please ignore this email."
+    send_mail(subject, message, 'your_email@example.com', [user.email])
+
+
+class ForgotPasswordAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = ProfileUser.objects.get(email=email)
+            send_reset_password_email(user, request)
+            return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
