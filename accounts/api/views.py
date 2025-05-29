@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import AccountRegisterSerializer, AccountLoginSerializer, ForgotPasswordSerializer,ResetPasswordSerializer
+from .serializers import *
 from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
 from datetime import timedelta
@@ -23,6 +23,8 @@ from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+from rest_framework.permissions import IsAuthenticated
 
 def send_activation_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -192,3 +194,32 @@ class ResetPasswordAPIView(APIView):
             return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user = request.user
+            if not user.is_authenticated:
+                return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            profile_data = UserProfileSerializer(user).data
+            projects = Project.objects.filter(userObject=user)
+            donations = Donation.objects.filter(user_id=user)
+
+            projects_data = UserProjectSerializer(projects, many=True).data
+            donations_data = UserDonationSerializer(donations, many=True).data
+
+            return Response({
+                "user": profile_data,
+                "projects": projects_data,
+                "donations": donations_data
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": "Failed to load user profile.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
