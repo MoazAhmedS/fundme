@@ -70,3 +70,20 @@ class SimilarProjectsView(APIView):
         return Response({'similar_projects': serialized_data}, status=status.HTTP_200_OK)
     
 
+class SearchProjectsView(APIView):
+    def get(self, request):
+        search_query = request.GET.get('search', '')
+
+        if not search_query:
+            return Response({"detail": "Please provide a search query."}, status=status.HTTP_400_BAD_REQUEST)
+
+        title_matches = Project.objects.filter(title__icontains=search_query)
+
+        tag_matches = Project.objects.filter(
+            projecttag__tag_id__name__icontains=search_query
+        )
+
+        projects = (title_matches | tag_matches).distinct()
+
+        serialized = ProjectSerializer(projects, many=True)
+        return Response(serialized.data, status=status.HTTP_200_OK)
