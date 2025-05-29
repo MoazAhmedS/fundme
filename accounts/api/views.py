@@ -32,6 +32,8 @@ def send_activation_email(user, request):
     )
     subject = 'Activate Your Account'
     message = f'Hi {user.first_name},\nPlease activate your account using this link:\n{activation_link}'
+    message += "\nThis link will expire in 24 hours."
+
     send_mail(subject, message, 'your_email@example.com', [user.email])
 
 
