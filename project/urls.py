@@ -4,6 +4,6 @@ urlpatterns = [
     path('Create/',CreateProject.as_view()),
     path('<int:id>/',ReadUpdateDeleteProjectByID.as_view()),
     path('<int:project_id>/comments/', ProjectCommentsView.as_view(), name='project-comments'),
-    path('projects/cancel/<int:project_id>/', CancelProjectAPIView.as_view(), name='cancel_project'),
+    path('cancel/<int:project_id>/', CancelProjectAPIView.as_view(), name='cancel_project'),
 
 ]

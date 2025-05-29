@@ -59,7 +59,7 @@ class CancelProjectAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        if project.can_be_cancelled():
+        if project.can_be_cancelled:
             project.status = False
             project.save()
             return Response(
