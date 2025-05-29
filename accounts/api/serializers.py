@@ -57,3 +57,14 @@ class AccountLoginSerializer(serializers.ModelSerializer):
             return data
 
         raise serializers.ValidationError("Must include 'email' and 'password'.")
+
+
+class ForgotPasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileUser
+        fields = ['email']
+
+    def validate_email(self, value):
+        if not ProfileUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist.")
+        return value
