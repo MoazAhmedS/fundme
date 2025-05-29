@@ -46,3 +46,28 @@ class ProjectCommentsView(APIView):
         serialized = CommentSerializer(comments, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
 
+
+
+class CancelProjectAPIView(APIView):
+
+    def post(self, request, project_id):
+        try:
+            project = Project.getProjById(project_id)
+        except:
+            return Response(
+                {"success": False, "message": "Project not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if project.can_be_cancelled():
+            project.status = False
+            project.save()
+            return Response(
+                {"success": True, "message": "Project cancelled successfully."},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"success": False, "message": "Project cannot be cancelled. Donations >= 25% of target."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
