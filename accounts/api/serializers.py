@@ -68,3 +68,23 @@ class ForgotPasswordSerializer(serializers.ModelSerializer):
         if not ProfileUser.objects.filter(email=value).exists():
             raise serializers.ValidationError("User with this email does not exist.")
         return value
+
+
+class ResetPasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = ProfileUser
+        fields = ['password', 'confirm_password']
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+
+    def update(self, instance, validated_data):
+        validated_data.pop('confirm_password')
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
