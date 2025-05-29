@@ -108,3 +108,9 @@ class UserDonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
         fields = ['id', 'amount', 'donation_date', 'project_id', 'project_title']
+
+class UserUpdateProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(read_only=True)
+    class Meta:
+        model = ProfileUser
+        fields = ['email', 'first_name', 'last_name', 'phone', 'image', 'birth_date', 'facebook', 'country']
