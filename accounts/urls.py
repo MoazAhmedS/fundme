@@ -11,5 +11,7 @@ urlpatterns = [
     path('forgot-password/', ForgotPasswordAPIView.as_view(), name='forgot-password'),
     path('reset-password/<uidb64>/<token>/', ResetPasswordAPIView.as_view(), name='reset-password'),
     path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('profile/edit/', UserProfileUpdateAPIView.as_view(), name='user-profile-edit'),
+
 
 ]

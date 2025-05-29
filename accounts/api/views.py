@@ -223,3 +223,25 @@ class UserProfileView(APIView):
                 {"error": "Failed to load user profile.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+class UserProfileUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        return self.update_profile(request)
+    
+    def patch(self, request):
+        return self.update_profile(request)
+
+    def update_profile(self, request,setPartial):
+        data = request.data.copy()
+        data.pop('email', None)
+
+        serializer = UserUpdateProfileSerializer(request.user, data=data, partial=setPartial)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {"error": "Failed to update profile.", "details": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
