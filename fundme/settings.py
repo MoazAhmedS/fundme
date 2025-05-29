@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +43,18 @@ INSTALLED_APPS = [
     'comments.apps.CommentsConfig',
     'interactions.apps.InteractionsConfig',
     'donation.apps.DonationConfig',
+
+    # Django Allauth Facebook settings
+    'django.contrib.sites',
     'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook',
+    'dj_rest_auth.registration',
+    # End Django Allauth Facebook settings
 ]
 
 MIDDLEWARE = [
@@ -53,6 +65,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware', # Django Allauth Facebook settings
+
 ]
 
 ROOT_URLCONF = 'fundme.urls'
@@ -133,4 +147,39 @@ AUTH_USER_MODEL = 'accounts.ProfileUser'
 
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR/'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'moazahmed0102@gmail.com'
+EMAIL_HOST_PASSWORD = 'vusa thzo ocqc aebz' 
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+# Django Allauth Facebook settings
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_USERNAME_REQUIRED = True 
+ACCOUNT_EMAIL_REQUIRED = True  
+
+ACCOUNT_SIGNUP_FIELDS = {
+    'username': {'required': True}, 
+    'email': {'required': True},
+}
+
+PASSWORD_RESET_TIMEOUT = 86400
