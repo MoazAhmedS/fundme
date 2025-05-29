@@ -1,7 +1,6 @@
 from rest_framework import serializers 
 
 from ..models import *
-from ...accounts.models import ProfileUser
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
