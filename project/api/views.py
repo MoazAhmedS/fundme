@@ -11,6 +11,7 @@ from interactions.models import Tag, ProjectTag
 
 
 class CreateProject(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         project_data = request.data.copy()
         images = request.FILES.getlist('images')
