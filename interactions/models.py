@@ -35,7 +35,6 @@ class Rate(models.Model):
     class Meta:
         verbose_name = "Rate"
         verbose_name_plural = "Rates"
-        unique_together = ('user_id', 'project_id')  
 
     def __str__(self):
         return f"{self.user.username} rated {self.project.title} - {self.rate_value}"

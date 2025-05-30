@@ -1,5 +1,6 @@
 from django.urls import path
 from project.api.views import *
+
 urlpatterns = [
     path('Create/',CreateProject.as_view()),
     path('<int:id>/',ProjectDetails.as_view()),
@@ -9,4 +10,5 @@ urlpatterns = [
     path('featured/latest/', LastFiveFeaturedProjects.as_view(), name='last-featured-projects'),
     path('list/categories/', CategoryListView.as_view(), name='category-list'),
     path('api/latest-projects/', LatestFiveProjectsView.as_view(), name='latest-projects'),
+    path('api/projects/top/', TopRatedRunningProjectsView.as_view(), name='top-projects'),
 ]

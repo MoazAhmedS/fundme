@@ -118,3 +118,13 @@ class LatestFiveProjectsView(APIView):
                 {"error": "An error occurred while fetching the latest projects.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )        
+
+
+
+class TopRatedRunningProjectsView(APIView):
+    def get(self, request):
+        running_projects = Project.objects.filter(status=True)
+        rated_projects = running_projects.annotate(avg_rating=Avg('rate__rate_value'))
+        top_rated_projects = rated_projects.order_by('-avg_rating')[:5]
+        serializer = ProjectSerializer(top_rated_projects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)        
