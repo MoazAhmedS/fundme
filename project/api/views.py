@@ -88,3 +88,9 @@ class SearchProjectsView(APIView):
 
         serialized = ProjectSerializer(projects, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
+    
+class LastFiveFeaturedProjects(APIView):
+    def get(self, request):
+        projects = Project.objects.filter(featured=True).order_by('-create_date')[:5]
+        serialized_projects = ProjectSerializer(projects, many=True)
+        return Response(serialized_projects.data, status=status.HTTP_200_OK)
