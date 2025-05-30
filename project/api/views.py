@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer
+from .serializers import *
 from ..models import *
 from comments.models import Comment
 from comments.API.serializers import CommentSerializer
@@ -94,3 +94,16 @@ class LastFiveFeaturedProjects(APIView):
         projects = Project.objects.filter(featured=True).order_by('-create_date')[:5]
         serialized_projects = ProjectSerializer(projects, many=True)
         return Response(serialized_projects.data, status=status.HTTP_200_OK)
+    
+class CategoryListView(APIView):
+    def get(self, request):
+        try:
+            categories = Category.objects.all()
+            serializer = CategorySerializer(categories, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while fetching categories.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
