@@ -8,5 +8,5 @@ urlpatterns = [
     path('cancel/<int:project_id>/', CancelProjectAPIView.as_view(), name='cancel_project'),
     path('<int:project_id>/similar/', SimilarProjectsView.as_view(), name='similar-projects'),
     path('Search/', SearchProjectsView.as_view(), name='project-search'),
-
+    path('categories/<int:category_id>/projects/', ProjectsByCategoryView.as_view(), name='projects-by-category'),
 ]

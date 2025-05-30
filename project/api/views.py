@@ -50,6 +50,7 @@ class ProjectCommentsView(APIView):
         serialized = CommentSerializer(comments, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
 
+
 class CreateCategoryView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -132,3 +133,21 @@ class SearchProjectsView(APIView):
 
         serialized = ProjectSerializer(projects, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
+    
+ 
+
+class ProjectsByCategoryView(APIView):
+    def get(self, request, category_id):
+        category = get_object_or_404(Category, pk=category_id)
+
+    
+        projects = Project.objects.filter(categoryObject=category)
+
+        if not projects.exists():
+            return Response(
+                {"projects": [], "message": "No projects found for this category."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = ProjectSerializer(projects, many=True)
+        return Response({"projects": serializer.data}, status=status.HTTP_200_OK)
