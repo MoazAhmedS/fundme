@@ -35,12 +35,15 @@ class ProjectSerializer(serializers.ModelSerializer):
     tags = serializers.ListField(
         child=serializers.CharField(), write_only=True, required=False
     )
+
+    tag_names = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Project
         fields = [
             'id', 'title', 'details', 'target', 'current_donations', 'rates',
             'start_date', 'end_date', 'status', 'featured',
-            'create_date', 'category_id', 'user_id','images','tags'
+            'create_date', 'category_id', 'user_id','images','tags', 'tag_names'
         ]
         read_only_fields = ['id', 'create_date', 'categoryObject', 'userObject']
 
@@ -65,3 +68,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_rates(self, obj):
         return obj.rates 
     
+    def get_tag_names(self, obj):
+            return list(
+                Tag.objects.filter(projecttag__project_id=obj.id).values_list('name', flat=True)
+            )

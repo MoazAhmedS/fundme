@@ -12,8 +12,8 @@ from comments.models import Comment
 from comments.API.serializers import CommentSerializer
 from interactions.models import Tag, ProjectTag
 
+
 class CreateProject(APIView):
-    permission_classes = [IsAuthenticated]
     def post(self, request):
         project_data = request.data.copy()
         images = request.FILES.getlist('images')
@@ -90,3 +90,27 @@ class CancelProjectAPIView(APIView):
                 {"success": False, "message": "Project cannot be cancelled. Donations >= 25% of target."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+class SimilarProjectsView(APIView):
+    def get(self, request, project_id):
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        tag_ids = ProjectTag.objects.filter(project_id=project).values_list('tag_id', flat=True)
+
+        if not tag_ids:
+            return Response({'similar_projects': []}, status=status.HTTP_200_OK)
+
+        similar_project_ids = ProjectTag.objects.filter(
+            tag_id__in=tag_ids
+        ).exclude(
+            project_id=project
+        ).values_list('project_id', flat=True).distinct()
+
+        similar_projects = Project.objects.filter(id__in=similar_project_ids)
+
+        serialized_data = ProjectSerializer(similar_projects, many=True).data
+        return Response({'similar_projects': serialized_data}, status=status.HTTP_200_OK)
+    
+

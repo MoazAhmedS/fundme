@@ -6,5 +6,5 @@ urlpatterns = [
     path('<int:project_id>/comments/', ProjectCommentsView.as_view(), name='project-comments'),
     path('api/createCategory/', CreateCategoryView.as_view(), name='create-category'),
     path('cancel/<int:project_id>/', CancelProjectAPIView.as_view(), name='cancel_project'),
-
+    path('<int:project_id>/similar/', SimilarProjectsView.as_view(), name='similar-projects'),
 ]
