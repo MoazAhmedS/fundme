@@ -46,6 +46,10 @@ class Project(models.Model):
     def rates(self):
         from interactions.models import Rate
         return Rate.objects.filter(project_id=self).aggregate(avg=Avg('rate_value'))['avg'] or 0
+    
+    @property
+    def can_be_cancelled(self):
+        return self.current_donations < (0.25 * self.target)
 
 class Images(models.Model):
     projectObject = models.ForeignKey(Project, on_delete=models.CASCADE,)

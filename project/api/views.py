@@ -9,23 +9,31 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import *
 from ..models import *
 from comments.models import Comment
-from comments.API.serializers import CommentSerializer
+from interactions.models import Tag, ProjectTag
 
 class CreateProject(APIView):
-    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         project_data = request.data.copy()
-        images = request.FILES.getlist('images') 
+        images = request.FILES.getlist('images')
+
+        tag_names = request.data.getlist('tags')
 
         projectSerialized = ProjectSerializer(data=project_data)
         if projectSerialized.is_valid():
             project = projectSerialized.save()
+
+            for tag_name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                ProjectTag.objects.get_or_create(project_id=project, tag_id=tag)
+
             for image in images:
                 Images.objects.create(projectObject=project, path=image)
 
             return Response(data=ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
         else:
             return Response(data={'errors': projectSerialized.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class ReadUpdateDeleteProjectByID(APIView):
     def get(self,request,id):
@@ -56,3 +64,28 @@ class CreateCategoryView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CancelProjectAPIView(APIView):
+
+    def post(self, request, project_id):
+        try:
+            project = Project.getProjById(project_id)
+        except:
+            return Response(
+                {"success": False, "message": "Project not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if project.can_be_cancelled:
+            project.status = False
+            project.save()
+            return Response(
+                {"success": True, "message": "Project cancelled successfully."},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"success": False, "message": "Project cannot be cancelled. Donations >= 25% of target."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
