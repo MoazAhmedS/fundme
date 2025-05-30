@@ -106,4 +106,15 @@ class CategoryListView(APIView):
                 {"error": "An error occurred while fetching categories.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
+
+class LatestFiveProjectsView(APIView):
+    def get(self, request):
+        try:
+            latest_projects = Project.objects.order_by('-create_date')[:5]
+            serializer = ProjectSerializer(latest_projects, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while fetching the latest projects.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )        
