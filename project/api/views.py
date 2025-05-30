@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-from .serializers import *
+from .serializers import ProjectSerializer
 from ..models import *
 from comments.models import Comment
 from comments.API.serializers import CommentSerializer
@@ -70,11 +70,6 @@ class SimilarProjectsView(APIView):
         serialized_data = ProjectSerializer(similar_projects, many=True).data
         return Response({'similar_projects': serialized_data}, status=status.HTTP_200_OK)
     
-class CategoryListView(APIView):
-    def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class SearchProjectsView(APIView):
     def get(self, request):
@@ -94,12 +89,8 @@ class SearchProjectsView(APIView):
         serialized = ProjectSerializer(projects, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
     
-
-
-class CategoryListView(APIView):
+class LastFiveFeaturedProjects(APIView):
     def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
+        projects = Project.objects.filter(featured=True).order_by('-create_date')[:5]
+        serialized_projects = ProjectSerializer(projects, many=True)
+        return Response(serialized_projects.data, status=status.HTTP_200_OK)
