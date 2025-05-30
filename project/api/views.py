@@ -156,3 +156,27 @@ class LastFiveFeaturedProjects(APIView):
         projects = Project.objects.filter(featured=True).order_by('-create_date')[:5]
         serialized_projects = ProjectSerializer(projects, many=True)
         return Response(serialized_projects.data, status=status.HTTP_200_OK)
+    
+class CategoryListView(APIView):
+    def get(self, request):
+        try:
+            categories = Category.objects.all()
+            serializer = CategorySerializer(categories, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while fetching categories.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class LatestFiveProjectsView(APIView):
+    def get(self, request):
+        try:
+            latest_projects = Project.objects.order_by('-create_date')[:5]
+            serializer = ProjectSerializer(latest_projects, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while fetching the latest projects.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )        
