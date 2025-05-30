@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from interactions.models import Tag, ProjectTag, Rate
 
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -16,7 +18,16 @@ class ProjectTagSerializer(serializers.ModelSerializer):
 
 
 class RateSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')  
+
     class Meta:
         model = Rate
-        fields = ['id', 'user_id', 'project_id', 'rate_value', 'note']
-        read_only_fields = ['id', 'user_id']
+        fields = ['id', 'user', 'project', 'rate_value', 'note']
+        read_only_fields = ['id', 'user']
+
+    def validate_rate_value(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rate must be between 1 and 5.")
+        return value
+
+

@@ -25,6 +25,6 @@ urlpatterns = [
     path('comment/' , include('comments.urls')), 
     path('reports/', include('reports.urls')),
     path('Project/',include('project.urls'))
-
+    path('api/', include('interactions.urls')),
 
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
