@@ -9,4 +9,6 @@ urlpatterns = [
     path('<int:project_id>/similar/', SimilarProjectsView.as_view(), name='similar-projects'),
     path('Search/', SearchProjectsView.as_view(), name='project-search'),
     path('categories/<int:category_id>/projects/', ProjectsByCategoryView.as_view(), name='projects-by-category'),
+    path('featured/latest/', LastFiveFeaturedProjects.as_view(), name='last-featured-projects'),
 ]
+
