@@ -252,11 +252,11 @@ class UserProfileUpdateAPIView(APIView):
     def patch(self, request):
         return self.update_profile(request)
 
-    def update_profile(self, request,setPartial):
+    def update_profile(self, request):
         data = request.data.copy()
         data.pop('email', None)
 
-        serializer = UserUpdateProfileSerializer(request.user, data=data, partial=setPartial)
+        serializer = UserUpdateProfileSerializer(request.user, data=data, partial=True,context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

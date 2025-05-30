@@ -113,6 +113,46 @@ class UserDonationSerializer(serializers.ModelSerializer):
 
 class UserUpdateProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(read_only=True)
+    old_password = serializers.CharField(write_only=True, required=False)
+    new_password = serializers.CharField(write_only=True, required=False)
+    confirm_new_password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = ProfileUser
-        fields = ['email', 'first_name', 'last_name', 'phone', 'image', 'birth_date', 'facebook', 'country']
+        fields = [
+            'email', 'first_name', 'last_name', 'phone', 'image', 'birth_date',
+            'facebook', 'country',
+            'old_password', 'new_password', 'confirm_new_password',
+        ]
+
+    def validate(self, data):
+        old = data.get('old_password')
+        new = data.get('new_password')
+        confirm = data.get('confirm_new_password')
+
+        if old or new or confirm:
+            if not (old and new and confirm):
+                raise serializers.ValidationError("All password fields are required to change the password.")
+
+            user = self.context['request'].user
+            if not user.check_password(old):
+                raise serializers.ValidationError({"old_password": "Old password is incorrect."})
+            
+            if new != confirm:
+                raise serializers.ValidationError({"confirm_new_password": "Passwords do not match."})
+
+        return data
+
+    def update(self, instance, validated_data):
+        new_password = validated_data.pop('new_password', None)
+        validated_data.pop('old_password', None)
+        validated_data.pop('confirm_new_password', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if new_password:
+            instance.set_password(new_password)
+
+        instance.save()
+        return instance
