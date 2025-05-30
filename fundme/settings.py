@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'comments.apps.CommentsConfig',
     'interactions.apps.InteractionsConfig',
     'donation.apps.DonationConfig',
-
+    'reports.apps.ReportsConfig',
     # Django Allauth Facebook settings
     'django.contrib.sites',
     'rest_framework',
@@ -97,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fundme',
         'USER': 'postgres',
-        'PASSWORD': '212002',
+        'PASSWORD': '123',
         'HOST': 'localhost',
         'PORT': '5432'
     }
@@ -174,12 +174,7 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-ACCOUNT_USERNAME_REQUIRED = True 
-ACCOUNT_EMAIL_REQUIRED = True  
+ACCOUNT_SIGNUP_FIELDS = ['username', 'email']
 
-ACCOUNT_SIGNUP_FIELDS = {
-    'username': {'required': True}, 
-    'email': {'required': True},
-}
 
 PASSWORD_RESET_TIMEOUT = 86400

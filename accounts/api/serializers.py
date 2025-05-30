@@ -61,10 +61,12 @@ class AccountLoginSerializer(serializers.ModelSerializer):
         raise serializers.ValidationError("Must include 'email' and 'password'.")
 
 
-class ForgotPasswordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProfileUser
-        fields = ['email']
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True, error_messages={
+        "required": "Email is required.",
+        "blank": "Email cannot be blank.",
+        "invalid": "Enter a valid email address."
+    })
 
     def validate_email(self, value):
         if not ProfileUser.objects.filter(email=value).exists():
