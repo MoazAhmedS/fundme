@@ -21,10 +21,10 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('accounts.urls')),
-    path('comment/' , include('comments.urls')), 
-    path('reports/', include('reports.urls')),
-    path('Project/',include('project.urls')),
-    path('api/', include('interactions.urls')),
-    path('donation/', include('donation.urls')),
+    path('accounts/API/', include('accounts.urls')),
+    path('comment/API/' , include('comments.urls')), 
+    path('reports/API/', include('reports.urls')),
+    path('Project/API/',include('project.urls')),
+    path('interactions/API/', include('interactions.urls')),
+    path('donation/API/', include('donation.urls')),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
