@@ -11,7 +11,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 
 class AccountRegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)   
 
     class Meta:
         model = ProfileUser

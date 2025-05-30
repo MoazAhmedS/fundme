@@ -6,6 +6,7 @@ from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
 from datetime import timedelta
 from django.utils.timezone import now
+from django.contrib.auth import logout
 
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -245,3 +246,21 @@ class UserProfileUpdateAPIView(APIView):
             {"error": "Failed to update profile.", "details": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request):
+        user = request.user
+        if not user.is_active:
+            return Response({'error': 'Account is not active.'}, status=status.HTTP_403_FORBIDDEN)
+        password = request.data.get('password')
+        if not password:
+            return Response({'error': 'Password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.check_password(password):
+            return Response({'error': 'Incorrect password.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.is_active = False
+        user.save()
+        logout(request)
+        
+        return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)        

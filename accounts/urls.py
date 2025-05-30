@@ -12,6 +12,9 @@ urlpatterns = [
     path('reset-password/<uidb64>/<token>/', ResetPasswordAPIView.as_view(), name='reset-password'),
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('profile/edit/', UserProfileUpdateAPIView.as_view(), name='user-profile-edit'),
+    path('api/profile/delete/', DeleteAccountView.as_view(), name='delete-account'),
+
 
 
 ]
+
