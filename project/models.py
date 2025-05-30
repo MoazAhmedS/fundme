@@ -1,7 +1,8 @@
 from django.db import models
-
+from django.shortcuts import get_object_or_404
 # Create your models here.
 from accounts.models import ProfileUser
+from django.db.models import Sum, Avg
 
 class Category(models.Model):
     name = models.CharField(max_length=100,verbose_name="Category Name")
@@ -17,7 +18,6 @@ class Project(models.Model):
     title = models.CharField(max_length=100, verbose_name="Project Title")
     details = models.CharField(max_length=200, verbose_name="Project Details")
     target = models.IntegerField(verbose_name="Project Target")
-    current_donations = models.IntegerField(verbose_name="Current Donations")
     start_date = models.DateField(verbose_name="Start Date")
     end_date = models.DateField(verbose_name="End Date")
     create_date = models.DateField(auto_now_add=True, verbose_name="Create Date")
@@ -33,7 +33,20 @@ class Project(models.Model):
         verbose_name = "Project"
         verbose_name_plural = "Projects"
 
+    @classmethod 
+    def getProjById(cls,id):
+        return get_object_or_404(cls,id=id)
+
+    @property
+    def current_donations(self):
+        from donation.models import Donation
+        return Donation.objects.filter(project_id=self).aggregate(total=Sum('amount'))['total'] or 0
     
+    @property
+    def rates(self):
+        from interactions.models import Rate
+        return Rate.objects.filter(project_id=self).aggregate(avg=Avg('rate_value'))['avg'] or 0
+
 class Images(models.Model):
     projectObject = models.ForeignKey(Project, on_delete=models.CASCADE,)
     path = models.ImageField(upload_to='project/imgs/')
