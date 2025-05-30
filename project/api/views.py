@@ -9,6 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import *
 from ..models import *
 from comments.models import Comment
+from comments.API.serializers import CommentSerializer
 from interactions.models import Tag, ProjectTag
 
 class CreateProject(APIView):
