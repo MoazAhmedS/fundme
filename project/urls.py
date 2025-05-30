@@ -4,5 +4,6 @@ urlpatterns = [
     path('Create',CreateProject.as_view()),
     path('<int:id>/',ReadUpdateDeleteProjectByID.as_view()),
     path('<int:project_id>/comments/', ProjectCommentsView.as_view(), name='project-comments'),
+    path('api/createCategory/', CreateCategoryView.as_view(), name='create-category'),
 
 ]

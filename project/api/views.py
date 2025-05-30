@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView,CreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import  PageNumberPagination
 from rest_framework.viewsets import ModelViewSet
-from .serializers import ProjectSerializer
+from .serializers import *
 from ..models import *
 from comments.models import Comment
 from comments.API.serializers import CommentSerializer
@@ -40,3 +40,19 @@ class ProjectCommentsView(APIView):
         serialized = CommentSerializer(comments, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
 
+class CreateCategoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not request.user.is_superuser:
+            return Response({'error': 'Only superusers can create categories.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  
+            return Response({
+                'message': 'Category created successfully.',
+                'category': serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
