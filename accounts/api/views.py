@@ -168,12 +168,30 @@ class ForgotPasswordAPIView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data['email']
-            user = ProfileUser.objects.get(email=email)
-            send_reset_password_email(user, request)
-            return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
-        
+            email = serializer.validated_data.get('email') 
+            try:
+                user = ProfileUser.objects.get(email=email)
+            except ProfileUser.DoesNotExist:
+                return Response(
+                    {"error": "No account associated with this email."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            try:
+                send_reset_password_email(user, request)
+            except Exception as e:
+                return Response(
+                    {"error": "Failed to send reset email.", "details": str(e)},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            return Response(
+                {"message": "Password reset email sent."},
+                status=status.HTTP_200_OK
+            )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
 
 class ResetPasswordAPIView(APIView):
