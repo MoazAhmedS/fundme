@@ -39,17 +39,38 @@ class CreateProject(APIView):
         
 
 class ProjectDetails(APIView):
-    def get(self,request,id):
-        return Response(
-            data=ProjectSerializer.getProjectById(id),
-            status=status.HTTP_200_OK
-        )
+    def get(self, request, id):
+        try:
+            project_data = ProjectSerializer.getProjectById(id)
+            if not project_data:
+                return Response(
+                    {"success": False, "message": "Project not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            return Response(data=project_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "An error occurred.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class ProjectCommentsView(APIView):
     def get(self, request, project_id):
-        comments = Comment.objects.filter(project_id=project_id, parent_id=None).order_by('-created_date')
-        serialized = CommentSerializer(comments, many=True)
-        return Response(serialized.data, status=status.HTTP_200_OK)
+        try:
+            if not Project.objects.filter(id=project_id).exists():
+                return Response(
+                    {"success": False, "message": "Project not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            comments = Comment.objects.filter(project_id=project_id, parent_id=None).order_by('-created_date')
+            serialized = CommentSerializer(comments, many=True)
+            return Response(serialized.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "Failed to load comments.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CreateCategoryView(APIView):
@@ -71,6 +92,7 @@ class CreateCategoryView(APIView):
 
 
 class CancelProjectAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, project_id):
         try:
@@ -79,6 +101,12 @@ class CancelProjectAPIView(APIView):
             return Response(
                 {"success": False, "message": "Project not found."},
                 status=status.HTTP_404_NOT_FOUND
+            )
+
+        if project.status is False:
+            return Response(
+                {"success": False, "message": "Project is already cancelled."},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         if project.can_be_cancelled:
@@ -93,6 +121,7 @@ class CancelProjectAPIView(APIView):
                 {"success": False, "message": "Project cannot be cancelled. Donations >= 25% of target."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         
 
 class SimilarProjectsView(APIView):
@@ -130,18 +159,30 @@ class SearchProjectsView(APIView):
         search_query = request.GET.get('search', '')
 
         if not search_query:
-            return Response({"detail": "Please provide a search query."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Please provide a search query."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            title_matches = Project.objects.filter(title__icontains=search_query, status=True)
 
-        title_matches = Project.objects.filter(title__icontains=search_query)
+            tag_matches = Project.objects.filter(
+                projecttag__tag_id__name__icontains=search_query,
+                status=True
+            )
+            projects = (title_matches | tag_matches).distinct()
 
-        tag_matches = Project.objects.filter(
-            projecttag__tag_id__name__icontains=search_query
-        )
+            serialized = ProjectSerializer(projects, many=True)
+            return Response(
+                {"success": True, "data": serialized.data},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "An error occurred during search.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        projects = (title_matches | tag_matches).distinct()
-
-        serialized = ProjectSerializer(projects, many=True)
-        return Response(serialized.data, status=status.HTTP_200_OK)
     
  
 
@@ -150,7 +191,7 @@ class ProjectsByCategoryView(APIView):
         category = get_object_or_404(Category, pk=category_id)
 
     
-        projects = Project.objects.filter(categoryObject=category)
+        projects = Project.objects.filter(categoryObject=category,status=True)
 
         if not projects.exists():
             return Response(
@@ -163,7 +204,7 @@ class ProjectsByCategoryView(APIView):
     
 class LastFiveFeaturedProjects(APIView):
     def get(self, request):
-        projects = Project.objects.filter(featured=True).order_by('-create_date')[:5]
+        projects = Project.objects.filter(featured=True,status=True).order_by('-create_date')[:5]
         serialized_projects = ProjectSerializer(projects, many=True)
         return Response(serialized_projects.data, status=status.HTTP_200_OK)
     
@@ -182,7 +223,7 @@ class CategoryListView(APIView):
 class LatestFiveProjectsView(APIView):
     def get(self, request):
         try:
-            latest_projects = Project.objects.order_by('-create_date')[:5]
+            latest_projects = Project.objects.filter(status=True).order_by('-create_date')[:5]
             serializer = ProjectSerializer(latest_projects, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -192,13 +233,18 @@ class LatestFiveProjectsView(APIView):
             )        
 
 
+
 class TopRatedRunningProjectsView(APIView):
     def get(self, request):
-        running_projects = Project.objects.filter(status=True)
-        rated_projects = running_projects.annotate(avg_rating=Avg('rate__rate_value'))
-        top_rated_projects = rated_projects.order_by('-avg_rating')[:5]
-        serializer = ProjectSerializer(top_rated_projects, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)        
+        projects = Project.objects.filter(status=True)
+        projects = sorted(
+            projects,
+            key=lambda p: p.rate_set.aggregate(avg=Avg('rate_value'))['avg'] or 0,
+            reverse=True
+        )[:5]
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+  
 
 class ToggleFeaturedProjectView(APIView):
     permission_classes = [IsAuthenticated]

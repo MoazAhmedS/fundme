@@ -16,7 +16,7 @@ class RateCreateAPIView(APIView):
 
     def post(self, request, project_id):
         data = request.data.copy()
-        data['project_id'] = project_id 
+        data['project'] = project_id 
         serializer = RateSerializer(data=data)
         if serializer.is_valid():
             serializer.save(user=request.user)

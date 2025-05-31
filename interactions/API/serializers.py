@@ -18,8 +18,6 @@ class ProjectTagSerializer(serializers.ModelSerializer):
 
 
 class RateSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')  
-
     class Meta:
         model = Rate
         fields = ['id', 'user', 'project', 'rate_value', 'note']
