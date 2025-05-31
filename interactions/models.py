@@ -29,7 +29,7 @@ class ProjectTag(models.Model):
 
 class Rate(models.Model):
     user = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name="Project")
+    project= models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name="Project")
     rate_value = models.PositiveSmallIntegerField(
         verbose_name="Rate Value",
         validators=[MinValueValidator(1), MaxValueValidator(5)]
