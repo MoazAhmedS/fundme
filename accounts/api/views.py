@@ -140,7 +140,7 @@ class FacebookLogin(SocialLoginView):
             return Response({"error": "User account is deleted."}, status=status.HTTP_403_FORBIDDEN)
         
         if not user.email_active and user.last_login and (user.last_login - user.date_joined).total_seconds() > 5:
-            return Response({"error": f'Account {user.email} is not activated.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": f'Account is not activated.'}, status=status.HTTP_403_FORBIDDEN)
 
         if not user.email_active:
             send_activation_email(user, request)
