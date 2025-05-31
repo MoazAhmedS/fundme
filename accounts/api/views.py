@@ -132,6 +132,29 @@ class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
     def get_response(self):
         user = self.user
+        request = self.request
+        if not user:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not user.is_active:
+            return Response({"error": "User account is deleted."}, status=status.HTTP_403_FORBIDDEN)
+        
+        if not user.email_active and user.last_login and (user.last_login - user.date_joined).total_seconds() > 5:
+            return Response({"error": f'Account {user.email} is not activated.'}, status=status.HTTP_403_FORBIDDEN)
+
+        if not user.email_active:
+            send_activation_email(user, request)
+            return Response({
+                "message": "Please check your email to activate your account.",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                }
+            }, status=status.HTTP_201_CREATED)
+        
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "token": token.key,
