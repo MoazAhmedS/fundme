@@ -21,7 +21,7 @@ class Project(models.Model):
     start_date = models.DateField(verbose_name="Start Date")
     end_date = models.DateField(verbose_name="End Date")
     create_date = models.DateField(auto_now_add=True, verbose_name="Create Date")
-    status = models.BooleanField(default=False, verbose_name="Project Status")
+    status = models.BooleanField(default=True, verbose_name="Project Status")
     featured = models.BooleanField(default=False, verbose_name="Is Featured")
     userObject = models.ForeignKey(to=ProfileUser,on_delete=models.CASCADE)
     categoryObject = models.ForeignKey(to=Category, on_delete=models.CASCADE)
