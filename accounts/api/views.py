@@ -26,6 +26,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.models import Token
 
 def send_activation_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -99,7 +100,6 @@ class LoginAPIView(APIView):
 
     def post(self, request):
         serializer = AccountLoginSerializer(data=request.data)
-        print(serializer.is_valid())
 
         if serializer.is_valid():
             email = serializer.validated_data['email']
@@ -110,10 +110,10 @@ class LoginAPIView(APIView):
                 if not user.email_active:
                     return Response({"error": "Account is not activated."}, status=status.HTTP_403_FORBIDDEN)
 
-                refresh = RefreshToken.for_user(user)
+                token, _ = Token.objects.get_or_create(user=user)
+
                 return Response({
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
+                    "token": token.key,
                     "user": {
                         "id": user.id,
                         "username": user.username,
@@ -132,10 +132,9 @@ class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
     def get_response(self):
         user = self.user
-        refresh = RefreshToken.for_user(user)
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "token": token.key,
             "user": {
                 "id": user.id,
                 "username": user.username,
@@ -282,3 +281,14 @@ class DeleteAccountView(APIView):
         logout(request)
         
         return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)        
+    
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            request.user.auth_token.delete()
+            return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
+        except:
+            return Response({"error": "Token not found."}, status=status.HTTP_400_BAD_REQUEST)
