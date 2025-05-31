@@ -151,6 +151,7 @@ class ProjectsByCategoryView(APIView):
 
         serializer = ProjectSerializer(projects, many=True)
         return Response({"projects": serializer.data}, status=status.HTTP_200_OK)
+    
 class LastFiveFeaturedProjects(APIView):
     def get(self, request):
         projects = Project.objects.filter(featured=True).order_by('-create_date')[:5]
