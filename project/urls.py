@@ -14,4 +14,5 @@ urlpatterns = [
     path('list/categories/', CategoryListView.as_view(), name='category-list'),
     path('latest-projects/', LatestFiveProjectsView.as_view(), name='latest-projects'),
     path('projects/top/', TopRatedRunningProjectsView.as_view(), name='top-projects'),
+    path('projects/<int:project_id>/toggle-featured/', ToggleFeaturedProjectView.as_view()),
 ]

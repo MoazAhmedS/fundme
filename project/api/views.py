@@ -190,3 +190,36 @@ class TopRatedRunningProjectsView(APIView):
         top_rated_projects = rated_projects.order_by('-avg_rating')[:5]
         serializer = ProjectSerializer(top_rated_projects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)        
+
+class ToggleFeaturedProjectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, project_id):
+        if not request.user.is_superuser:
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            project = get_object_or_404(Project, id=project_id)
+            project.featured = not project.featured
+            project.save()
+
+            return Response({
+                "id": project.id,
+                "featured": project.featured,
+                "message": "Project featured status updated successfully."
+            }, status=status.HTTP_200_OK)
+
+        except Project.DoesNotExist:
+            return Response(
+                {"detail": "Project not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except Exception as e:
+            return Response(
+                {"detail": "An unexpected error occurred.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
