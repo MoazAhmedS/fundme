@@ -66,7 +66,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         return project
     
     def get_rates(self, obj):
-        return obj.rates 
+        avg = obj.rate_set.aggregate(avg=Avg('rate_value'))['avg']
+        return round(avg, 2) if avg else 0
     
     def get_tag_names(self, obj):
             return list(

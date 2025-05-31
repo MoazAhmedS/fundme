@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     # End Django Allauth Facebook settings
     'drf_spectacular',
-
 ]
 
 MIDDLEWARE = [
