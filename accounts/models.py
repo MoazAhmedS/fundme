@@ -15,7 +15,7 @@ class ProfileUser(AbstractUser):
     country = models.CharField( max_length=100,   blank=True, null=True,verbose_name="Country")
     
     email_active = models.BooleanField(default=False, verbose_name="Email Activated")
-    
+    email_active_sent = models.BooleanField(default=False, verbose_name="Email Activated Sent")
     create_date = models.DateTimeField( auto_now_add=True,verbose_name="Creation Date")
     
     def __str__(self):

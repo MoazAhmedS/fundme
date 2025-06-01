@@ -93,7 +93,7 @@ class ActivateAccountView(APIView):
         
         if user:
             if default_token_generator.check_token(user, token):
-                token_created_time = user.last_login or user.date_joined
+                token_created_time = user.date_joined
                 if now() - token_created_time > timedelta(hours=24):
                     return Response({"error": "Activation link has expired."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -196,8 +196,10 @@ class FacebookLogin(SocialLoginView):
         if not user.email_active and user.last_login and (user.last_login - user.date_joined).total_seconds() > 5:
             return Response({"error": f'Account is not activated.'}, status=status.HTTP_403_FORBIDDEN)
 
-        if not user.email_active:
+        if not user.email_active and not user.email_active_sent:
             send_activation_email(user, request)
+            user.email_active_sent = True
+            user.save()
             return Response({
                 "message": "Please check your email to activate your account.",
                 "user": {
@@ -208,6 +210,9 @@ class FacebookLogin(SocialLoginView):
                     "last_name": user.last_name,
                 }
             }, status=status.HTTP_201_CREATED)
+        
+        if not user.email_active and user.email_active_sent and (user.last_login - user.date_joined).total_seconds() <= 5:
+            return Response({"message": "Please check your email to activate your account."}, status=status.HTTP_201_CREATED)
         
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
