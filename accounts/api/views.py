@@ -68,7 +68,7 @@ class RegisterAPIView(APIView):
 
                 return Response({
                     "message": "User registered successfully. Please check your email to activate your account.",
-                    "user": AccountRegisterSerializer(user).data
+                    "user": UserProfileSerializer(user).data
                 }, status=status.HTTP_201_CREATED)
 
             except Exception as e:
