@@ -27,6 +27,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
+from drf_spectacular.utils import extend_schema
 
 def send_activation_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -40,7 +41,12 @@ def send_activation_email(user, request):
 
     send_mail(subject, message, 'your_email@example.com', [user.email])
 
-
+@extend_schema(
+    summary="Register user",
+    request=AccountRegisterSerializer,
+    responses={201: AccountRegisterSerializer},
+    description="Register a new user account. Sends activation email upon success."
+)
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -70,7 +76,13 @@ class RegisterAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
+@extend_schema(
+    summary="Activate account",
+    description="Activates a user account using UID and token from the email link.",
+    responses={
+        200: {'description': 'Account activated successfully.'},
+    }
+)
 class ActivateAccountView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -94,7 +106,28 @@ class ActivateAccountView(APIView):
 
         return Response({"error": "Invalid or expired activation link."}, status=status.HTTP_400_BAD_REQUEST)
         
-
+@extend_schema(
+    summary="Login user",
+    description="Logs in the user using email and password. Returns auth token.",
+    request=AccountLoginSerializer,
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'token': {'type': 'string'},
+                'user': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'integer'},
+                        'email': {'type': 'string', 'format': 'email'},
+                        'first_name': {'type': 'string'},
+                        'last_name': {'type': 'string'},
+                    }
+                }
+            }
+        }
+    }
+)
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -127,6 +160,27 @@ class LoginAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(
+    summary="Login with Facebook",
+    description="Logs in the user using Facebook OAuth. Sends activation email if not activated.",
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'token': {'type': 'string'},
+                'user': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'integer'},
+                        'email': {'type': 'string', 'format': 'email'},
+                        'first_name': {'type': 'string'},
+                        'last_name': {'type': 'string'},
+                    }
+                }
+            }
+        }
+    }
+)
 @method_decorator(csrf_exempt, name='dispatch')
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
@@ -184,6 +238,12 @@ def send_reset_password_email(user, request):
     send_mail(subject, message, 'your_email@example.com', [user.email])
 
 
+@extend_schema(
+    summary="Forgot password",
+    description="Sends a password reset link to the user's email.",
+    request=ForgotPasswordSerializer,
+    responses={200:{'description': 'Password Reset email sent'}}
+)
 class ForgotPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -215,7 +275,12 @@ class ForgotPasswordAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
-
+@extend_schema(
+    summary="Reset password",
+    description="Resets the user's password using UID and token from reset email.",
+    request=ResetPasswordSerializer,
+    responses={200:{'description': 'Password reset successful'}}
+)
 class ResetPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -236,7 +301,15 @@ class ResetPasswordAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
+@extend_schema(
+    summary="Get user profile",
+    description="Retrieves user profile along with related projects and donations.",
+    responses={
+                "user": UserProfileSerializer,
+                "projects": UserProjectSerializer,
+                "donations": UserDonationSerializer
+        }
+)
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -264,7 +337,13 @@ class UserProfileView(APIView):
                 {"error": "Failed to load user profile.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
+
+@extend_schema(
+    summary="Update user profile",
+    description="Updates profile data. Email is immutable.",
+    request=UserUpdateProfileSerializer,
+    responses={200: UserUpdateProfileSerializer}
+)
 class UserProfileUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -286,7 +365,22 @@ class UserProfileUpdateAPIView(APIView):
             {"error": "Failed to update profile.", "details": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST
         )
-
+@extend_schema(
+    summary="Delete user account",
+    description="Soft deletes (deactivates) the user account after verifying password.",
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'password': {'type': 'string'}
+            },
+            'required': ['password']
+        }
+    },
+    responses={
+        200: {'description': 'Account deleted successfully.'},
+    }
+)
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -305,7 +399,13 @@ class DeleteAccountView(APIView):
         
         return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)        
     
-
+@extend_schema(
+    summary="Logout user",
+    description="Logs out the authenticated user by deleting the token.",
+    responses={
+        200: {'description': 'Logged out successfully.'},
+    }
+)
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -12,8 +12,14 @@ from comments.models import Comment
 from comments.API.serializers import CommentSerializer
 from interactions.models import Tag, ProjectTag
 from django.db.models import Count, Q
+from drf_spectacular.utils import extend_schema
 
-
+@extend_schema(
+    summary="Create a new project",
+    description="This endpoint allows authenticated users to create a new project. The request must include project details, images, and tags. The user must be authenticated to access this endpoint.",
+    request=ProjectSerializer,
+    responses={201: ProjectSerializer}
+)
 class CreateProject(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
