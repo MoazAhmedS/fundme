@@ -2,8 +2,9 @@ from django.urls import path
 from project.api.views import *
 
 urlpatterns = [
-    path('Create/',CreateProject.as_view()),
-    path('<int:id>/',ProjectDetails.as_view()),
+    path('',AllProjectsAPIView.as_view(),name='all-projects'),
+    path('Create/',CreateProject.as_view(),name='projects-create'),
+    path('<int:id>/',ProjectDetails.as_view(),name='project-details'),
     path('<int:project_id>/comments/', ProjectCommentsView.as_view(), name='project-comments'),
     path('createCategory/', CreateCategoryView.as_view(), name='create-category'),
     path('cancel/<int:project_id>/', CancelProjectAPIView.as_view(), name='cancel_project'),

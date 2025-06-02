@@ -17,6 +17,17 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter
 
 @extend_schema(
+    summary="List all projects",
+    description="Retrieve all projects with their images, tags, current donations, and average ratings.",
+   
+)
+class AllProjectsAPIView(APIView):
+    def get(self, request):
+        projects = Project.objects.all()
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+@extend_schema(
     summary="Create a new project",
     description="This endpoint allows authenticated users to create a new project. The request must include project details, images, and tags. The user must be authenticated to access this endpoint.",
     request=ProjectSerializer,
