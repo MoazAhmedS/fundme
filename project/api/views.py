@@ -50,6 +50,21 @@ class CreateProject(APIView):
 
         projectSerialized = ProjectSerializer(data=project_data)
         if projectSerialized.is_valid():
+            if(projectSerialized.validated_data['target'] <= 0):
+                return Response(
+                    {'error': 'Project Target must be greater than zero.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if(projectSerialized.validated_data['end_date'] < projectSerialized.validated_data['start_date']):
+                return Response(
+                    {'error': 'Project end date must be after the start date.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+            if(projectSerialized.validated_data['status'] == False):
+                projectSerialized.validated_data['status'] = True
+
+            projectSerialized.validated_data['userObject'] = request.user
             project = projectSerialized.save()
 
             for tag_name in tag_names:
