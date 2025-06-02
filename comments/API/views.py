@@ -17,24 +17,17 @@ class ProjectCommentView(APIView):
     @extend_schema(
         summary="Add a comment to a project",
         description="Authenticated users can post a comment on the specified project. Provide the comment text in the body.",
-        parameters=[
-            OpenApiParameter(
-                name='Authorization',
-                description='Token authentication. Format: Token <your_token>',
-                required=True,
-                type=str,
-                location=OpenApiParameter.HEADER,
-            ),
-        ],
         request={
-            "type": "object",
-            "properties": {
-                "comment": {
-                    "type": "string",
-                    "description": "The comment text to post on the project."
-                }
-            },
-            "required": ["comment"]
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'comment': {
+                        'type': 'string',
+                        'description': 'The content of the comment'
+                    }
+                },
+                'required': ['text']
+            }
         },
         responses={
             201: OpenApiResponse(description="Comment created successfully."),
