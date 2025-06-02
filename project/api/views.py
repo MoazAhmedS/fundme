@@ -13,6 +13,8 @@ from comments.API.serializers import CommentSerializer
 from interactions.models import Tag, ProjectTag
 from django.db.models import Count, Q
 from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
 
 @extend_schema(
     summary="Create a new project",
@@ -22,9 +24,16 @@ from drf_spectacular.utils import extend_schema
 )
 class CreateProject(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
         project_data = request.data.copy()
         images = request.FILES.getlist('images')
+
+        if not images:
+            return Response(
+                data={'error': 'At least one image is required to create a project.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         tag_names = request.data.getlist('tags')
 
@@ -42,8 +51,12 @@ class CreateProject(APIView):
             return Response(data=ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
         else:
             return Response(data={'errors': projectSerialized.errors}, status=status.HTTP_400_BAD_REQUEST)
-        
 
+        
+@extend_schema(
+        summary="Retrieve a project's details",
+        description="Fetch detailed information for a specific project using its ID. Returns 404 if the project is not found.",
+    )
 class ProjectDetails(APIView):
     def get(self, request, id):
         try:
@@ -60,7 +73,10 @@ class ProjectDetails(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
+@extend_schema(
+        summary="Retrieve comments for a project",
+        description="Retrieve all comments and replies for a specific project using its ID. Returns 404 if the project does not exist.",
+)
 class ProjectCommentsView(APIView):
     def get(self, request, project_id):
         try:
@@ -78,7 +94,12 @@ class ProjectCommentsView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
+@extend_schema(
+    summary="Create a new category",
+    description="Allows superusers to create a new category. Only authenticated superusers are authorized to access this endpoint.",
+    request=CategorySerializer,
+    responses={201: CategorySerializer}
+)
 class CreateCategoryView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -97,6 +118,13 @@ class CreateCategoryView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(
+    summary="Cancel a project",
+    description=(
+        "Allows an authenticated user to cancel a project by its ID, if the project is eligible for cancellation. "
+        "Returns 404 if the project does not exist, 400 if it's already cancelled or if donations have reached at least 25% of the target."
+    )
+)
 class CancelProjectAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -129,7 +157,10 @@ class CancelProjectAPIView(APIView):
             )
 
         
-
+@extend_schema(
+    summary="Retrieve similar projects",
+    description="Fetch projects that share common tags with the given project ID, excluding the project itself.",
+   )
 class SimilarProjectsView(APIView):
     def get(self, request, project_id):
         try:
@@ -159,7 +190,19 @@ class SimilarProjectsView(APIView):
         serialized_data = ProjectSerializer(similar_projects, many=True).data
         return Response({'similar_projects': serialized_data}, status=status.HTTP_200_OK)
     
-
+@extend_schema(
+    summary="Search projects",
+    description="Search projects by title or tags matching the given query string.",
+    parameters=[
+        OpenApiParameter(
+            name="search",
+            description="Search query string to filter projects by title or tag names",
+            required=True,
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+        ),
+    ],
+)
 class SearchProjectsView(APIView):
     def get(self, request):
         search_query = request.GET.get('search', '')
@@ -171,12 +214,17 @@ class SearchProjectsView(APIView):
             )
         try:
             title_matches = Project.objects.filter(title__icontains=search_query, status=True)
-
             tag_matches = Project.objects.filter(
                 projecttag__tag_id__name__icontains=search_query,
                 status=True
             )
             projects = (title_matches | tag_matches).distinct()
+
+            if not projects.exists():
+                return Response(
+                    {"success": False, "message": "No projects found matching the search query."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
             serialized = ProjectSerializer(projects, many=True)
             return Response(
@@ -189,9 +237,11 @@ class SearchProjectsView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+@extend_schema(
+        summary="Retrieve projects by category",
+        description="Fetch active projects belonging to a specific category by its ID.",
+        )
     
- 
-
 class ProjectsByCategoryView(APIView):
     def get(self, request, category_id):
         category = get_object_or_404(Category, pk=category_id)
@@ -208,12 +258,20 @@ class ProjectsByCategoryView(APIView):
         serializer = ProjectSerializer(projects, many=True)
         return Response({"projects": serializer.data}, status=status.HTTP_200_OK)
     
+@extend_schema(
+        summary="Get last five featured projects",
+        description="Retrieve the latest five active projects marked as featured.",
+        responses={200: ProjectSerializer(many=True)}
+)    
 class LastFiveFeaturedProjects(APIView):
     def get(self, request):
         projects = Project.objects.filter(featured=True,status=True).order_by('-create_date')[:5]
         serialized_projects = ProjectSerializer(projects, many=True)
         return Response(serialized_projects.data, status=status.HTTP_200_OK)
-    
+@extend_schema(
+        summary="List all categories",
+        description="Retrieve a list of all available categories.",
+    )    
 class CategoryListView(APIView):
     def get(self, request):
         try:
@@ -226,6 +284,10 @@ class CategoryListView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+@extend_schema(
+        summary="Retrieve latest five active projects",
+        description="Fetch the five most recently created projects that are currently active.",
+    )
 class LatestFiveProjectsView(APIView):
     def get(self, request):
         try:
@@ -239,7 +301,10 @@ class LatestFiveProjectsView(APIView):
             )        
 
 
-
+@extend_schema(
+        summary="Retrieve top 5 highest rated active projects",
+        description="Fetch the top five active projects ranked by average rating value.",
+    )
 class TopRatedRunningProjectsView(APIView):
     def get(self, request):
         projects = Project.objects.filter(status=True)
@@ -251,7 +316,11 @@ class TopRatedRunningProjectsView(APIView):
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
   
-
+@extend_schema(
+        summary="Toggle featured status of a project",
+        description="Allow superusers to toggle the featured status of a specific project by its ID.",
+        
+        )
 class ToggleFeaturedProjectView(APIView):
     permission_classes = [IsAuthenticated]
 
