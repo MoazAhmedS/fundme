@@ -6,8 +6,19 @@ from rest_framework.permissions import IsAuthenticated
 from donation.models import Donation
 from project.models import Project
 from donation.API.serializers import DonationSerializer 
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 
+@extend_schema(
+    summary="Create a new donation",
+    description="This endpoint allows authenticated users to donate to a project. The request must include the donation amount. The user must be authenticated to access this endpoint.",
+    request=DonationSerializer,
+    responses={
+        201: DonationSerializer,
+        400: OpenApiResponse(description="Bad Request (Invalid data)"),
+        404: OpenApiResponse(description="Project not found")
+    }
+)
 class ProjectDonationView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -6,7 +6,56 @@ from django.shortcuts import get_object_or_404
 from ..models import Report, ReportProject, ReportComment
 from project.models import Project
 from comments.models import Comment
+from drf_spectacular.utils import extend_schema
 
+@extend_schema(
+    summary="Report a comment",
+    description="This endpoint allows authenticated users to report inappropriate comments.",
+    request={
+        'type': 'object',
+        'properties': {
+            'reason': {
+                'type': 'string',
+                'description': 'Detailed explanation why the comment is being reported',
+                'example': 'Contains offensive language or harassment'
+            }
+        },
+        'required': ['reason']
+    },
+    responses={
+        201: {
+            'type': 'object',
+            'properties': {
+                'success': {
+                    'type': 'boolean',
+                    'example': True,
+                    'description': 'Indicates if the report was successful'
+                },
+                'message': {
+                    'type': 'string',
+                    'example': 'Comment has been reported successfully.',
+                    'description': 'Success message'
+                }
+            }
+        },
+        400: {
+            'description': 'Bad Request',
+            'type': 'object',
+            'properties': {
+                'success': {'type': 'boolean', 'example': False},
+                'message': {'type': 'string', 'example': 'Reason is required.'}
+            }
+        },
+        404: {
+            'description': 'Not Found',
+            'type': 'object',
+            'properties': {
+                'detail': {'type': 'string', 'example': 'Not found.'}
+            }
+        }
+    },
+    tags=['Reports']
+)
 class ReportCommentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -28,6 +77,54 @@ class ReportCommentView(APIView):
 
         return Response({'success': True, 'message': 'comment has been reported successfully.'}, status=status.HTTP_201_CREATED)
 
+@extend_schema(
+    summary="Report a project",
+    description="This endpoint allows authenticated users to report projects that violate guidelines.",
+    request={
+        'type': 'object',
+        'properties': {
+            'reason': {
+                'type': 'string',
+                'description': 'Detailed explanation why the project is being reported',
+                'example': 'Contains plagiarized content or violates copyright'
+            }
+        },
+        'required': ['reason']
+    },
+    responses={
+        201: {
+            'type': 'object',
+            'properties': {
+                'success': {
+                    'type': 'boolean',
+                    'example': True,
+                    'description': 'Indicates if the report was successful'
+                },
+                'message': {
+                    'type': 'string',
+                    'example': 'Project has been reported successfully.',
+                    'description': 'Success message'
+                }
+            }
+        },
+        400: {
+            'description': 'Bad Request',
+            'type': 'object',
+            'properties': {
+                'success': {'type': 'boolean', 'example': False},
+                'message': {'type': 'string', 'example': 'Reason is required.'}
+            }
+        },
+        404: {
+            'description': 'Not Found',
+            'type': 'object',
+            'properties': {
+                'detail': {'type': 'string', 'example': 'Not found.'}
+            }
+        }
+    },
+    tags=['Reports']
+)
 class ReportProjectView(APIView):
     permission_classes = [IsAuthenticated]
 
