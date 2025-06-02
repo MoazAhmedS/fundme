@@ -33,13 +33,27 @@ class ProjectDonationView(APIView):
         data['user_id'] = request.user.id
 
         serializer = DonationSerializer(data=data)
-
         if serializer.is_valid():
-            donation = serializer.save()
+            if(serializer.validated_data['amount'] <= 0):
+                return Response(
+                    {'error': 'Donation amount must be greater than zero.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            donation_amount = serializer.validated_data['amount']
+            remaining_amount = project.target - project.current_donations
+            if remaining_amount == 0:
+                return Response(
+                    {'error': 'Project has already reached its target.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if donation_amount > remaining_amount:
+                return Response(
+                    {'error': f'Donation exceeds remaining target. Only {remaining_amount} left.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            # # Optional: update the project's current donations
-            # project.current_donations += donation.amount
-            project.save()
+            donation = serializer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
