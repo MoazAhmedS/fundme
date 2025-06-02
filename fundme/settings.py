@@ -98,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fundme',
         'USER': 'postgres',
-        'PASSWORD': '123',
+        'PASSWORD': '212002',
         'HOST': 'localhost',
         'PORT': '5432'
     }
