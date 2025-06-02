@@ -11,17 +11,18 @@ from drf_spectacular.utils import extend_schema
 @extend_schema(
     summary="Report a comment",
     description="This endpoint allows authenticated users to report inappropriate comments.",
-    request={
-        'type': 'object',
-        'properties': {
-            'reason': {
-                'type': 'string',
-                'description': 'Detailed explanation why the comment is being reported',
-                'example': 'Contains offensive language or harassment'
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'reason': {
+                        'type': 'string',
+                        'description': 'The content of the reason for reporting the comment',
+                    }
+                },
+                'required': ['text']
             }
         },
-        'required': ['reason']
-    },
     responses={
         201: {
             'type': 'object',
@@ -80,17 +81,18 @@ class ReportCommentView(APIView):
 @extend_schema(
     summary="Report a project",
     description="This endpoint allows authenticated users to report projects that violate guidelines.",
-    request={
-        'type': 'object',
-        'properties': {
-            'reason': {
-                'type': 'string',
-                'description': 'Detailed explanation why the project is being reported',
-                'example': 'Contains plagiarized content or violates copyright'
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'reason': {
+                        'type': 'string',
+                        'description': 'The content of the reason for reporting the project',
+                    }
+                },
+                'required': ['text']
             }
         },
-        'required': ['reason']
-    },
     responses={
         201: {
             'type': 'object',
