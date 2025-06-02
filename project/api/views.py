@@ -19,7 +19,7 @@ from drf_spectacular.utils import OpenApiParameter
 @extend_schema(
     summary="List all projects",
     description="Retrieve all projects with their images, tags, current donations, and average ratings.",
-   
+    responses={201: ProjectSerializer}
 )
 class AllProjectsAPIView(APIView):
     def get(self, request):
@@ -67,6 +67,7 @@ class CreateProject(APIView):
 @extend_schema(
         summary="Retrieve a project's details",
         description="Fetch detailed information for a specific project using its ID. Returns 404 if the project is not found.",
+        responses={200: ProjectSerializer}
     )
 class ProjectDetails(APIView):
     def get(self, request, id):
@@ -87,6 +88,7 @@ class ProjectDetails(APIView):
 @extend_schema(
         summary="Retrieve comments for a project",
         description="Retrieve all comments and replies for a specific project using its ID. Returns 404 if the project does not exist.",
+        responses={200:CommentSerializer},
 )
 class ProjectCommentsView(APIView):
     def get(self, request, project_id):
@@ -171,6 +173,7 @@ class CancelProjectAPIView(APIView):
 @extend_schema(
     summary="Retrieve similar projects",
     description="Fetch projects that share common tags with the given project ID, excluding the project itself.",
+    responses={200: ProjectSerializer}
    )
 class SimilarProjectsView(APIView):
     def get(self, request, project_id):
@@ -213,6 +216,7 @@ class SimilarProjectsView(APIView):
             location=OpenApiParameter.QUERY,
         ),
     ],
+    responses={200: ProjectSerializer}
 )
 class SearchProjectsView(APIView):
     def get(self, request):
@@ -251,6 +255,7 @@ class SearchProjectsView(APIView):
 @extend_schema(
         summary="Retrieve projects by category",
         description="Fetch active projects belonging to a specific category by its ID.",
+        responses={200: ProjectSerializer}
         )
     
 class ProjectsByCategoryView(APIView):
@@ -279,9 +284,11 @@ class LastFiveFeaturedProjects(APIView):
         projects = Project.objects.filter(featured=True,status=True).order_by('-create_date')[:5]
         serialized_projects = ProjectSerializer(projects, many=True)
         return Response(serialized_projects.data, status=status.HTTP_200_OK)
+    
 @extend_schema(
         summary="List all categories",
         description="Retrieve a list of all available categories.",
+        responses={200: ProjectSerializer}
     )    
 class CategoryListView(APIView):
     def get(self, request):
@@ -298,6 +305,7 @@ class CategoryListView(APIView):
 @extend_schema(
         summary="Retrieve latest five active projects",
         description="Fetch the five most recently created projects that are currently active.",
+        responses={200: ProjectSerializer}
     )
 class LatestFiveProjectsView(APIView):
     def get(self, request):
@@ -315,6 +323,7 @@ class LatestFiveProjectsView(APIView):
 @extend_schema(
         summary="Retrieve top 5 highest rated active projects",
         description="Fetch the top five active projects ranked by average rating value.",
+        responses={200: ProjectSerializer}
     )
 class TopRatedRunningProjectsView(APIView):
     def get(self, request):
@@ -330,7 +339,22 @@ class TopRatedRunningProjectsView(APIView):
 @extend_schema(
         summary="Toggle featured status of a project",
         description="Allow superusers to toggle the featured status of a specific project by its ID.",
-        
+        responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'id': {'type': 'integer', 'description': 'The ID of the project'},
+                'featured': {'type': 'boolean', 'description': 'Whether the project is featured'},
+                'message': {'type': 'string', 'description': 'Confirmation message'}
+            },
+            'example': {
+                'id': 42,
+                'featured': True,
+                'message': 'Project featured status updated successfully.'
+            }
+        },
+        404: OpenApiTypes.STR 
+    }
         )
 class ToggleFeaturedProjectView(APIView):
     permission_classes = [IsAuthenticated]
