@@ -2,6 +2,7 @@ from django.db import models
 from accounts.models import ProfileUser
 from project.models import Project
 
+
 class Comment(models.Model):
     user_id = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
