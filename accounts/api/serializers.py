@@ -3,6 +3,7 @@ from ..models import ProfileUser
 from django.contrib.auth import authenticate
 from project.models import Project
 from donation.models import Donation
+import re
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,8 +27,21 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        if data['password'] != data['confirm_password']:
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+
+        if len(password) < 8:
+            raise serializers.ValidationError({"password": "Password must be at least 8 characters long."})
+
+        if not re.search(r'[A-Z]', password):
+            raise serializers.ValidationError({"password": "Password must contain at least one uppercase letter."})
+
+        if not re.search(r'[a-z]', password):
+            raise serializers.ValidationError({"password": "Password must contain at least one lowercase letter."})
+
+        if password != confirm_password:
             raise serializers.ValidationError({"password": "Passwords do not match."})
+        
         return data
 
     def create(self, validated_data):
