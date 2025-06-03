@@ -15,3 +15,6 @@ media/
 
 **/migrations/*.py
 !**/migrations/__init__.py
+
+# Ignore the Environment variables file
+.env 
