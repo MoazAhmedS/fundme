@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     # End Django Allauth Facebook settings
     'drf_spectacular',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +70,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware', # Django Allauth Facebook settings
-
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'fundme.urls'
@@ -185,3 +186,4 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 
 PASSWORD_RESET_TIMEOUT = 86400
+CORS_ALLOW_ALL_ORIGINS = True

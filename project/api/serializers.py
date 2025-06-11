@@ -19,6 +19,8 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ['id','path','project_id']
 
 class ProjectSerializer(serializers.ModelSerializer):
+    categoryObject = CategorySerializer(read_only=True)
+
     category_id = serializers.PrimaryKeyRelatedField(
         source='categoryObject',
         queryset=Category.objects.all(),
@@ -43,7 +45,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'details', 'target', 'current_donations', 'rates',
             'start_date', 'end_date', 'status', 'featured',
-            'create_date', 'category_id', 'user_id','images','tags', 'tag_names'
+            'create_date', 'category_id', 'user_id','images','tags', 'tag_names','categoryObject'
         ]
         read_only_fields = ['id', 'create_date', 'categoryObject', 'userObject']
 
