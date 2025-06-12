@@ -14,6 +14,5 @@ def populate_email_if_missing(sender, request, sociallogin, **kwargs):
     if not user.email:
         user.email = f"{sociallogin.account.uid}@facebook.com"
         user.username = user.email  
-        user.phone = generate_egyptian_phone_number()
-    elif not user.phone:
+    if not user.phone:
         user.phone = generate_egyptian_phone_number()

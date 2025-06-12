@@ -32,9 +32,10 @@ from drf_spectacular.utils import extend_schema
 def send_activation_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
-    activation_link = request.build_absolute_uri(
-        reverse('activate-account', kwargs={'uidb64': uid, 'token': token})
-    )
+
+    react_base_url = "http://localhost:3000"
+
+    activation_link = f"{react_base_url}/activate/{uid}/{token}/"
     subject = 'Activate Your Account'
     message = f'Hi {user.first_name},\nPlease activate your account using this link:\n{activation_link}'
     message += "\nThis link will expire in 24 hours."
@@ -234,9 +235,10 @@ class FacebookLogin(SocialLoginView):
 def send_reset_password_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
-    reset_link = request.build_absolute_uri(
-        reverse('reset-password', kwargs={'uidb64': uid, 'token': token})
-    )
+
+    react_base_url = "http://localhost:3000"
+    reset_link = f"{react_base_url}/reset-password/{uid}/{token}"
+
     subject = 'Reset Your Password'
     message = f'Hi {user.first_name},\nPlease reset your password using this link:\n{reset_link}'
     message += "\nThis link will expire in 24 hours."
