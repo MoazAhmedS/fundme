@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from interactions.models import Tag, ProjectTag, Rate
-
+from accounts.api.serializers import SimpleAccountSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -11,16 +11,19 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ProjectTagSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ProjectTag
-        fields = ['id', 'project_id', 'tag_id']
+        fields = ['id', 'project_id', 'tag_id','user']
         read_only_fields = ['id']
 
 
 class RateSerializer(serializers.ModelSerializer):
+    user_id = SimpleAccountSerializer(source='user', read_only=True) 
+
     class Meta:
         model = Rate
-        fields = ['id', 'user', 'project', 'rate_value', 'note']
+        fields = ['id', 'user', 'project', 'rate_value', 'note','user_id']
         read_only_fields = ['id', 'user']
 
     def validate_rate_value(self, value):

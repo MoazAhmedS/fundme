@@ -24,8 +24,12 @@ from drf_spectacular.utils import OpenApiParameter
 class AllProjectsAPIView(APIView):
     def get(self, request):
         projects = Project.objects.all()
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = PageNumberPagination()
+        paginator.page_size = 9
+        page = paginator.paginate_queryset(projects, request, view=self)
+        
+        serializer = ProjectSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 @extend_schema(
     summary="Create a new project",
@@ -235,13 +239,14 @@ class SimilarProjectsView(APIView):
 )
 class SearchProjectsView(APIView):
     def get(self, request):
-        search_query = request.GET.get('search', '')
+        search_query = request.GET.get('search', '').strip()
 
         if not search_query:
             return Response(
                 {"success": False, "message": "Please provide a search query."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         try:
             title_matches = Project.objects.filter(title__icontains=search_query, status=True)
             tag_matches = Project.objects.filter(
@@ -250,17 +255,13 @@ class SearchProjectsView(APIView):
             )
             projects = (title_matches | tag_matches).distinct()
 
-            if not projects.exists():
-                return Response(
-                    {"success": False, "message": "No projects found matching the search query."},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+            paginator = PageNumberPagination()
+            paginator.page_size = 9
+            page = paginator.paginate_queryset(projects, request, view=self)
 
-            serialized = ProjectSerializer(projects, many=True)
-            return Response(
-                {"success": True, "data": serialized.data},
-                status=status.HTTP_200_OK
-            )
+            serializer = ProjectSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         except Exception as e:
             return Response(
                 {"success": False, "message": "An error occurred during search.", "details": str(e)},

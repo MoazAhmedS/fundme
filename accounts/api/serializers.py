@@ -10,6 +10,14 @@ class AccountSerializer(serializers.ModelSerializer):
         model =  ProfileUser
         fields = '__all__'  
 
+class SimpleAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  ProfileUser
+        fields = [
+            'first_name',
+            'last_name',
+            'image',
+        ]
 
 class AccountRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)   
@@ -111,7 +119,7 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'image', 'birth_date', 'facebook', 'country', 'email_active', 'create_date']
+        fields = ['id','is_superuser', 'username', 'email', 'first_name', 'last_name', 'phone', 'image', 'birth_date', 'facebook', 'country', 'email_active', 'create_date']
 
 class UserProjectSerializer(serializers.ModelSerializer):
     class Meta:

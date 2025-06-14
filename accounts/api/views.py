@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
+from project.api.serializers import ProjectSerializer
 from ..models import ProfileUser
 from django.utils.http import urlsafe_base64_decode
 from datetime import timedelta
@@ -154,6 +155,8 @@ class LoginAPIView(APIView):
                         "email": user.email,
                         "first_name": user.first_name,
                         "last_name": user.last_name,
+                        "image": user.image.url,
+                        "is_superuser": user.is_superuser,
                     }
                 }, status=status.HTTP_200_OK)
 
@@ -209,6 +212,8 @@ class FacebookLogin(SocialLoginView):
                     "email": user.email,
                     "first_name": user.first_name,
                     "last_name": user.last_name,
+                    "image": user.image.url,
+                    "is_superuser": user.is_superuser,
                 }
             }, status=status.HTTP_201_CREATED)
         
@@ -224,6 +229,8 @@ class FacebookLogin(SocialLoginView):
                 "email": user.email,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "image": user.image.url,
+                "is_superuser": user.is_superuser,
             }
         }, status=status.HTTP_200_OK)
 
@@ -313,7 +320,7 @@ class ResetPasswordAPIView(APIView):
     description="Retrieves user profile along with related projects and donations.",
     responses={
                 "user": UserProfileSerializer,
-                "projects": UserProjectSerializer,
+                "projects": ProjectSerializer,
                 "donations": UserDonationSerializer
         }
 )
@@ -330,7 +337,7 @@ class UserProfileView(APIView):
             projects = Project.objects.filter(userObject=user)
             donations = Donation.objects.filter(user_id=user)
 
-            projects_data = UserProjectSerializer(projects, many=True).data
+            projects_data = ProjectSerializer(projects, many=True).data
             donations_data = UserDonationSerializer(donations, many=True).data
 
             return Response({
