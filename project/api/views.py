@@ -41,7 +41,6 @@ class CreateProject(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        project_data = request.data.copy()
         images = request.FILES.getlist('images')
 
         if not images:
@@ -52,20 +51,22 @@ class CreateProject(APIView):
 
         tag_names = request.data.getlist('tags')
 
-        projectSerialized = ProjectSerializer(data=project_data)
+        projectSerialized = ProjectSerializer(data=request.data)
+
         if projectSerialized.is_valid():
-            if(projectSerialized.validated_data['target'] <= 0):
+            if projectSerialized.validated_data['target'] <= 0:
                 return Response(
                     {'error': 'Project Target must be greater than zero.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if(projectSerialized.validated_data['end_date'] < projectSerialized.validated_data['start_date']):
+
+            if projectSerialized.validated_data['end_date'] < projectSerialized.validated_data['start_date']:
                 return Response(
                     {'error': 'Project end date must be after the start date.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-        
-            if(projectSerialized.validated_data['status'] == False):
+
+            if projectSerialized.validated_data['status'] == False:
                 projectSerialized.validated_data['status'] = True
 
             projectSerialized.validated_data['userObject'] = request.user
@@ -82,7 +83,6 @@ class CreateProject(APIView):
         else:
             return Response(data={'errors': projectSerialized.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        
 @extend_schema(
         summary="Retrieve a project's details",
         description="Fetch detailed information for a specific project using its ID. Returns 404 if the project is not found.",
