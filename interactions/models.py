@@ -5,6 +5,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Tag(models.Model):
     name = models.CharField(max_length=100, verbose_name="Tag Name",unique=True)
+    
+    def save(self, *args, **kwargs):
+        self.name = self.name.lower()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

@@ -73,7 +73,8 @@ class CreateProject(APIView):
             project = projectSerialized.save()
 
             for tag_name in tag_names:
-                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                lowercase_tag_name = tag_name.lower()
+                tag, _ = Tag.objects.get_or_create(name=lowercase_tag_name)
                 ProjectTag.objects.get_or_create(project_id=project, tag_id=tag)
 
             for image in images:
